@@ -6,10 +6,12 @@ import ru.aladina.database.repository.FileRepository;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
 
@@ -47,7 +49,7 @@ public class FileService {
             Path directoryPath = Paths.get(directory.toURI());
             Files.walk(directoryPath).forEach(path -> {
                 File nextFile = path.toFile();
-                if (!nextFile.isDirectory()) {
+                if (!nextFile.isDirectory() && !Files.isSymbolicLink(nextFile.toPath())) {
                     var insertedFile = new MyFile(nextFile.getAbsolutePath());
                     try {
                         insertedFile.setHashSum(insertedFile.findHashSum());
@@ -62,6 +64,25 @@ public class FileService {
             System.out.println("Ошибка при обработке файловой системы: " + e.getMessage());
         }
     }
+
+    public long getDirectorySize(String directoryPath) throws IOException {
+        Path directory = Paths.get(directoryPath);
+
+        DirectorySizeVisitor visitor = new DirectorySizeVisitor();
+        Files.walkFileTree(directory, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE, visitor);
+
+        return visitor.getSize();
+    }
+
+    public void findAllFilesSize(File directory) {
+        try {
+            long directorySize = getDirectorySize(directory.toPath().toString());
+            System.out.println("Размер директории: " + directorySize + " байт");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     /**
      * Находит исходные файлы для всех файлов из файловой системы.

@@ -24,6 +24,7 @@ public class Application {
                 dataSourceProvider.getDataSource());
         var fileService = new FileService(fileRepository);
 
+
         fileService.insertAllFiles(new File(PropertyContainer.getProperty("filesystem.path")));
         fileService.findAllFilesMother(fileRepository.findAll());
         fileService.replaceDuplicateFilesWithLinks(fileRepository.findAll());
