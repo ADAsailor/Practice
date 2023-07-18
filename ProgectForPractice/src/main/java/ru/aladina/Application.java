@@ -15,8 +15,9 @@ import java.io.IOException;
  */
 public class Application {
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, InterruptedException {
         PropertyContainer.loadProperties();
+        File masterDirectory = new File(PropertyContainer.getProperty("filesystem.path"));
 
         var dataSourceProvider = new PostgreSQLProvider();
 
@@ -25,8 +26,12 @@ public class Application {
         var fileService = new FileService(fileRepository);
 
 
-        fileService.insertAllFiles(new File(PropertyContainer.getProperty("filesystem.path")));
+        System.out.println(fileService.myFindAllFilesSize(masterDirectory));
+        System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+        fileService.insertAllFiles(masterDirectory);
         fileService.findAllFilesMother(fileRepository.findAll());
         fileService.replaceDuplicateFilesWithLinks(fileRepository.findAll());
+        System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+        System.out.println(fileService.myFindAllFilesSize(masterDirectory));
         }
     }

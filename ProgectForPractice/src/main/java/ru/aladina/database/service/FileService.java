@@ -6,14 +6,13 @@ import ru.aladina.database.repository.FileRepository;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Класс отвечает за манипуляции с данными в базе.
@@ -65,22 +64,15 @@ public class FileService {
         }
     }
 
-    public long getDirectorySize(String directoryPath) throws IOException {
-        Path directory = Paths.get(directoryPath);
-
-        DirectorySizeVisitor visitor = new DirectorySizeVisitor();
-        Files.walkFileTree(directory, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE, visitor);
-
-        return visitor.getSize();
-    }
-
-    public void findAllFilesSize(File directory) {
-        try {
-            long directorySize = getDirectorySize(directory.toPath().toString());
-            System.out.println("Размер директории: " + directorySize + " байт");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public AtomicLong myFindAllFilesSize(File directory) throws IOException {
+        AtomicLong sum = new AtomicLong();
+        Files.walk(directory.toPath())
+                    .map(Path::toFile).forEach(path -> {
+                        if (!path.isDirectory()) {
+                            sum.addAndGet(path.length());
+                        }
+                    });
+        return sum;
     }
 
 
