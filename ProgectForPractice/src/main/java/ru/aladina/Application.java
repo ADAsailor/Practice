@@ -15,7 +15,7 @@ import java.io.IOException;
  */
 public class Application {
 
-    public static void main(String[] args) throws IOException, InterruptedException {
+    public static void main(String[] args) throws IOException {
         PropertyContainer.loadProperties();
         File masterDirectory = new File(PropertyContainer.getProperty("filesystem.path"));
 
