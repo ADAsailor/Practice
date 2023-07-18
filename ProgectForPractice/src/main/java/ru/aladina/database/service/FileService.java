@@ -21,11 +21,12 @@ public class FileService {
     /** Манипулятор. */
     private final FileRepository fileRepository;
     /** Имя файловой системы. */
-    public static final String FILESYSTEM_NAME = PropertyContainer.getProperty("filesystem.path").
+    private final String FILESYSTEM_NAME = PropertyContainer.getProperty("filesystem.path").
             split("/")[PropertyContainer.getProperty("filesystem.path").split("/").length - 1];
     /** Уровень расположения имени главной директории в абсолютных путях файлов системы. */
-    public static final Integer FILESYSTEM_LEVEL = PropertyContainer.getProperty("filesystem.path").
+    private final Integer FILESYSTEM_LEVEL = PropertyContainer.getProperty("filesystem.path").
             split("/").length-1;
+    private boolean BEFORE_OR_AFTER = true;
 
     /**
      * Конструктор для {@link FileService}.
@@ -64,15 +65,36 @@ public class FileService {
         }
     }
 
-    public AtomicLong myFindAllFilesSize(File directory) throws IOException {
-        AtomicLong sum = new AtomicLong();
+    /**
+     * Находит сумму размеров всех файлов и ссылок файловой системы.
+     *
+     * @param directory главная директория файловой системы
+     *
+     * @throws IOException ошибка при распознавании пути символьной ссылки
+     */
+    public void findFilesSizeSum(File directory) throws IOException {
+        AtomicLong sum = new AtomicLong(0);
         Files.walk(directory.toPath())
                     .map(Path::toFile).forEach(path -> {
                         if (!path.isDirectory()) {
-                            sum.addAndGet(path.length());
+                            if (Files.isSymbolicLink(path.toPath())) {
+                                try {
+                                    Path linkedFile = Files.readSymbolicLink(path.toPath());
+                                    sum.addAndGet(linkedFile.toFile().length());
+                                } catch (IOException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            } else {
+                                sum.addAndGet(path.length());
+                            }
                         }
                     });
-        return sum;
+        if (BEFORE_OR_AFTER) {
+            System.out.println("Размер директории до замены дубликатов на ссылки составляет: " + sum.get() + " байт");
+            BEFORE_OR_AFTER = false;
+        } else {
+            System.out.println("Размер директории после замены дубликатов на ссылки составляет: " + sum.get() + " байт");
+        }
     }
 
 
@@ -109,8 +131,8 @@ public class FileService {
                 throw new RuntimeException(e);
             }
         }
-        System.out.println("Иcходные файлы найдены");
-        System.out.println("=========================");
+        //System.out.println("Иcходные файлы найдены");
+        //System.out.println("=========================");
     }
 
     /**
@@ -170,13 +192,10 @@ public class FileService {
     private String giveRelativePathToMotherFile(String link, String file) {
         String[] linkSplitPath = link.split("/");
         String[] fileSplitPath = file.split("/");
-        StringBuilder newPath = new StringBuilder();
 
-        newPath.append(cdStringForPath(linkSplitPath));
-        newPath.append(motherPathStringForPath(fileSplitPath));
-
-        newPath.append(fileSplitPath[fileSplitPath.length - 1]);
-        return newPath.toString();
+        return cdStringForPath(linkSplitPath) +
+                motherPathStringForPath(fileSplitPath) +
+                fileSplitPath[fileSplitPath.length - 1];
     }
 
     /**
@@ -201,8 +220,8 @@ public class FileService {
                 //System.out.println("Файл успешно заменен на символическую ссылку.");
             }
         }
-        System.out.println("Повторяющиеся файлы успешно заменены на ссылки");
-        System.out.println("=========================");
+        //System.out.println("Повторяющиеся файлы успешно заменены на ссылки");
+        //System.out.println("=========================");
     }
 }
 

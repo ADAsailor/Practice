@@ -26,12 +26,12 @@ public class Application {
         var fileService = new FileService(fileRepository);
 
 
-        System.out.println(fileService.myFindAllFilesSize(masterDirectory));
-        System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+        fileService.findFilesSizeSum(masterDirectory);
+
         fileService.insertAllFiles(masterDirectory);
         fileService.findAllFilesMother(fileRepository.findAll());
         fileService.replaceDuplicateFilesWithLinks(fileRepository.findAll());
-        System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
-        System.out.println(fileService.myFindAllFilesSize(masterDirectory));
+
+        fileService.findFilesSizeSum(masterDirectory);
         }
     }

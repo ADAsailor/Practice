@@ -35,7 +35,7 @@ public class PostgreSQLFileRepository implements FileRepository {
      */
     @Override
     public void initTable() {
-        System.out.println("Инициализация таблицы: " + MyFile.TABLE_NAME);
+        //System.out.println("Инициализация таблицы: " + MyFile.TABLE_NAME);
         try (var connection = dataSource.getConnection();
              var statement = connection.createStatement()) {
                 statement.executeUpdate(
@@ -50,15 +50,15 @@ public class PostgreSQLFileRepository implements FileRepository {
                                 + "hashSum VARCHAR(255),"
                                 + "motherID VARCHAR(36)"
                                 + ")");
-                System.out.println("Таблица успешно создана");
+                //System.out.println("Таблица успешно создана");
         } catch (SQLException e) {
             if (e.getMessage().equals(String.format("ERROR: relation \"%s\" already exists", MyFile.TABLE_NAME))) {
-                System.out.println("Таблица уже существует");
+                //System.out.println("Таблица уже существует");
             } else {
                 System.out.println("Возникла ошибка при создании таблицы: " + e.getMessage());
             }
         } finally {
-            System.out.println("=========================");
+            //System.out.println("=========================");
         }
     }
 
@@ -244,12 +244,12 @@ public class PostgreSQLFileRepository implements FileRepository {
         try (var connection = dataSource.getConnection();
              var statement = connection.prepareStatement(query)) {
             statement.execute();
-            System.out.println("Данные из таблицы очищены успешно");
+            //System.out.println("Данные из таблицы очищены успешно");
         } catch (SQLException e) {
             System.out.println("Возникла ошибка выполнения запроса (удаление данных из таблицы): " + e.getMessage());
         }
         finally {
-            System.out.println("=========================");
+            //System.out.println("=========================");
         }
     }
 
